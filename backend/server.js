@@ -124,13 +124,51 @@ app.get('/create', (req, res) => {
 
 app.put('/update/:id', (req, res) => {
 
-    console.log("\n====================");
     console.log("[REQUEST RECEIVED]");
-    
-    
+
+    const { title, description } = req.body;
+    const { id } = req.params;
 
 
+    const sql =
+        "UPDATE items SET title = ?, description = ? WHERE id = ?";
 
-})
+    db.query(
+        sql,
+        [title, description, id],
+        (err, result) => {
 
+            if(err){
+
+                console.log("Database Error:", err.message);
+
+                return res.status(500).json({
+                    message: "Database Error"
+                });
+
+            }
+
+            if(result.affectedRows === 0){
+
+                console.log(`Item with ID ${id} not found`);
+
+                return res.status(404).json({
+                    message: "Item not found"
+                });
+
+            }
+
+            console.log(`Item ${id} updated successfully`);
+
+            res.json({
+                message: "Item updated successfully",
+                id,
+                title,
+                description
+            });
+
+        }
+    );
+
+});
 

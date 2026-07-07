@@ -9,45 +9,72 @@ export default function Todo() {
     const [message, setMessage] = useState('');
     const apiUrl = 'http://localhost:8000';
 
-    const handleSubmit = () => {
-        //checks input
-        if(title.trim() !== '' && description.trim() !== '') {
-
-            fetch(apiUrl + '/todos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ title, description })
-            }).then((res) =>{
-                if(res.ok) {
-                     setTodos([...todos, { title, description }]);
-                     setMessage('Todo item added successfully!');
-                }else{
-                    // Handle error response
-                    setError('Unable to add todo item. Please try again.');
-                }
-            });
-        }      
+const handleSubmit = () => {
+ setError("");
+    if (title.trim() === '' || description.trim() === '') {
+        setError("Please fill all fields");
+        setMessage("");
+        return;
     }
+
+    fetch(apiUrl + '/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, description })
+    })
+    .then((res) => {
+        if (res.ok) {
+            setTodos([...todos, { title, description }]);
+            setMessage("Todo item added successfully!");
+            setTimeout(() => {
+                setMessage("");
+            }, 3000);
+
+            setTitle("");
+            setDescription("");
+            setError(null);
+        } else {
+            console.log("server error");
+            setError("Unable to add todo item. Please try again.");
+            setMessage("");
+        }
+    })
+    .catch((err) => {
+        setError("Server not reachable.");
+        setMessage("");
+        console.log(err);
+    });
+};
 
   return (
     <>
     <div className="bg-green-200 p-4 rounded-lg shadow-md">
       <h1 className="mx-125">Todo Project with MERN stack</h1>
     </div>
-    <div className="bg-blue-200  rounded-lg shadow-md mt-4">
+    <div className="  rounded-lg shadow-md mt-4">
         <h5>Add Item</h5>
-       {message && <p>{message}</p>}
-
+    
         <div className="bg-gray-200 p-4 rounded-lg shadow-md mt-4 flex flex-row gap-5 items-start">
          <input type="text" placeholder="Title" onChange={(e)=> setTitle(e.target.value)} value={title} className="border border-gray-300 rounded px-2 py-1 w-full" />
            <input type="text" placeholder="Description" onChange={(e)=> setDescription(e.target.value)} value={description} className="border border-gray-300 rounded px-2 py-1 w-full" />
             <button className="bg-gray-500 text-white px-4 py-2 rounded " onClick={handleSubmit}>Submit</button>
          </div>
          {error &&<p className="text-red-600">{error}</p>}
+         {message && <p className="text-green-600">{message}</p>}
      </div>
 
+
+    <div>
+        <h3 > Task</h3>
+        <ul>
+            <li> 
+                <sp
+            </li>
+        </ul>
+    </div>
+ 
         
     </>
   );

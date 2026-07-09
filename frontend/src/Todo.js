@@ -68,11 +68,86 @@ export default function Todo() {
             });
 
     }
-    const handleUpdate = () => {
 
+    const handleEdit = (item) => {
+        setEditId(item.id);
+        setEdittitle(item.title);
+        setEditdescription(item.description);
     }
 
 
+    const handleUpdate = () => {
+        setError("");
+        if (edittitle.trim() === '' || editdescription.trim() === '') {
+            setError("Please fill all fields");
+            setMessage("");
+            return;
+        }
+
+        fetch(apiUrl + '/update/' + editId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title: edittitle, description: editdescription })
+        })
+            .then((res) => {
+                if (res.ok) {
+
+                    // Update the todo item in the local state
+                    const updatedTodos = todos.map((item) => {
+                        if (item.id === editId) {
+                            item.title = edittitle;
+                            item.description = editdescription;
+                        }
+                        return item;
+                    });
+
+
+                    setTodos(updatedTodos);
+                    setMessage("Todo item updated successfully!");
+                    setTimeout(() => {
+                        setMessage("");
+                    }, 3000);
+
+                    setEditId(-1);
+
+                } else {
+                    console.log("server error");
+                    setError("Unable to update todo item. Please try again.");
+                    setMessage("");
+                }
+            })
+            .catch((err) => {
+                setError("Server not reachable.");
+                setMessage("");
+                console.error("service error may not found");
+            });
+
+    }
+
+    const handleEditCancel = () => {
+        setEditId(-1);
+    }
+
+    const handleDelete = (id) => {
+        if (window.confirm("Are you sure you want to delete this item?")) {
+            fetch(apiUrl + '/delete/' + id, {
+                method: 'DELETE',
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        // Remove the todo item from the local state
+                        setTodos(todos.filter((todo) => todo.id !== id));
+                    }
+                })
+                .catch((err) => {
+                    setError("Server not reachable.");
+                    setMessage("");
+                    console.error("service error may not found");
+                });
+        }
+    }
 
     return (
         <>
@@ -114,8 +189,8 @@ export default function Todo() {
                                 </div>
 
                                 <div className="flex gap-2 ml-auto">
-                                    <button className="bg-red-500 text-white mx-6 px-4 py-2 rounded"> Delete</button> 
-                                    {editId ==-1 || editId !== item.id ? <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => setEditId(item.id),setEdittitle(item.title),setEditdescription(item.description)}>Edit</button> :<button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleUpdate}>Update</button>}
+                                    {editId == -1 || editId !== item.id ? <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => handleEdit(item)}>Edit</button> : <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={() => handleUpdate(item)}>Update</button>}
+                                    {editId == -1 ? <button className="bg-red-500 text-white mx-6 px-4 py-2 rounded" onClick={() => handleDelete(item.id)}> Delete</button> : <button className="bg-red-500 text-white mx-6 px-4 py-2 rounded" onClick={handleEditCancel}> Cancel</button>}
                                 </div>
 
                             </li>
